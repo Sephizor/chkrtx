@@ -1,0 +1,10 @@
+{
+    "cards": [],
+    "login": false,
+    "autobuy": false,
+    "autobuyLimit": 1,
+    "amazonUsername": "",
+    "amazonPassword": "",
+    "maxPrice": 0,
+    "sleepTime": 30
+}
