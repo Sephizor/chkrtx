@@ -65,21 +65,11 @@ async function login() {
 }
 
 async function checkForButton(cardName, url, maxPrice) {
-    const buyNowButton = await driver.findElements(By.id('buy-now-button'));
-    if (buyNowButton.length > 0) {
-        const price = await getPrice();
-        if(maxPrice === 0 || price <= maxPrice) {
-            nodeNotifier.notify({
-                title: 'RTX Finder',
-                message: `Found card ${cardName} for £${price.toFixed(2)}`,
-            }, () => {
-                open(url);
-            });
-            if(settings.autobuy) {
-                await buyCard();
-            }
-        }
+    const elements = await driver.findElements(By.id('buy-now-button'));
+    if (elements.length > 0) {
+        return true;
     }
+    return false;
 }
 
 async function getPrice() {
@@ -100,7 +90,21 @@ async function buyCard() {
 async function checkCard(cardName, url, maxPrice) {
     logger.info(`Checking ${cardName}`);
     await driver.get(url);
-    await checkForButton(cardName, url, maxPrice);
+    const inStock = await checkForButton(cardName, url, maxPrice);
+    if(inStock) {
+        const price = await getPrice();
+        if(maxPrice === 0 || price <= maxPrice) {
+            nodeNotifier.notify({
+                title: 'RTX Finder',
+                message: `Found card ${cardName} for £${price.toFixed(2)}`,
+            }, () => {
+                open(url);
+            });
+            if(settings.autobuy) {
+                await buyCard();
+            }
+        }
+    }
     logger.info(`Finished checking ${cardName}`);
 }
 
