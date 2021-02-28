@@ -114,7 +114,7 @@ async function checkCard(cardName, url, maxPrice) {
             await login();
         }
         while (true) {
-            for(let card of settings.cards) {
+            for(const card of settings.cards) {
                 const maxPrice = card.maxPrice !== undefined ? card.maxPrice : settings.maxPrice;
                 await checkCard(card.name, card.url, maxPrice);
             }
