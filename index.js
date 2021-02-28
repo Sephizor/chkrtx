@@ -74,7 +74,7 @@ async function checkForButton() {
 }
 
 async function getPrice() {
-    const element = await driver.findElement(By.id('priceblock_ourprice'));
+    const element = await driver.findElement(By.id('price_inside_buybox'));
     if(await element.isDisplayed()) {
         return parseFloat((await element.getText()).replace('£', ''));
     }
@@ -82,10 +82,11 @@ async function getPrice() {
 }
 
 async function buyCard() {
-    if(settings.autobuyLimit < bought) {
-
+    if(bought < settings.autobuyLimit) {
+        await driver.findElement(By.id('buy-now-button')).click();
+        await driver.findElement(By.id('turbo-checkout-pyo-button')).click();
+        bought++;
     }
-    bought++;
 }
 
 async function checkCard(cardName, url, maxPrice) {
@@ -94,7 +95,15 @@ async function checkCard(cardName, url, maxPrice) {
     const inStock = await checkForButton();
     if(inStock) {
         const price = await getPrice();
-        if(maxPrice === 0 || price <= maxPrice) {
+        if(price === -1) {
+            logger.warn(`Found card ${cardName} but could not parse price!`);
+            nodeNotifier.notify({
+                title: 'RTX Finder',
+                message: `Found card ${cardName} but could not parse price!`
+            });
+        }
+        else if(maxPrice === 0 || price <= maxPrice) {
+            logger.warn(`Found card ${cardName} for ${price.toFixed(2)}`);
             nodeNotifier.notify({
                 title: 'RTX Finder',
                 message: `Found card ${cardName} for £${price.toFixed(2)}`,
