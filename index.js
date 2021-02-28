@@ -4,6 +4,7 @@ import { Options } from 'selenium-webdriver/chrome.js';
 import winston from 'winston';
 import open from 'open';
 import fs from 'fs';
+import path from 'path';
 
 const settings = JSON.parse(fs.readFileSync('settings.json'));
 
@@ -64,7 +65,7 @@ async function login() {
     logger.info('Completed login');
 }
 
-async function checkForButton(cardName, url, maxPrice) {
+async function checkForButton() {
     const elements = await driver.findElements(By.id('buy-now-button'));
     if (elements.length > 0) {
         return true;
@@ -90,7 +91,7 @@ async function buyCard() {
 async function checkCard(cardName, url, maxPrice) {
     logger.info(`Checking ${cardName}`);
     await driver.get(url);
-    const inStock = await checkForButton(cardName, url, maxPrice);
+    const inStock = await checkForButton();
     if(inStock) {
         const price = await getPrice();
         if(maxPrice === 0 || price <= maxPrice) {
@@ -103,9 +104,24 @@ async function checkCard(cardName, url, maxPrice) {
             if(settings.autobuy) {
                 await buyCard();
             }
+            await takeScreenshot();
         }
     }
     logger.info(`Finished checking ${cardName}`);
+}
+
+async function takeScreenshot() {
+    if(settings.takeScreenshots) {
+        const png = await driver.takeScreenshot();
+        if(!fs.existsSync('screenshots')) {
+            fs.mkdirSync('screenshots');
+        }
+        const date = Intl.DateTimeFormat('en-GB', {
+            day: 'numeric', month: 'numeric', year: 'numeric',
+            hour: 'numeric', minute: 'numeric', second: 'numeric'
+        }).formatToParts(new Date());
+        fs.writeFileSync(`screenshots${path.sep}${date[0].value}-${date[2].value}-${date[4].value}_${date[6].value}-${date[8].value}-${date[10].value}.png`, png, 'base64');
+    }
 }
 
 (async function findRtx() {

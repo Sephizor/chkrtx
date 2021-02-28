@@ -6,5 +6,6 @@
     "amazonUsername": "",
     "amazonPassword": "",
     "maxPrice": 0,
-    "sleepTime": 30
+    "sleepTime": 30,
+    "takeScreenshots": false
 }
